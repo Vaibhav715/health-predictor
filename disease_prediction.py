@@ -5,7 +5,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score
 from xgboost import XGBClassifier
 
-# ================== DIABETES MODEL ==================
+# =========================================================
+# 🔷 DIABETES MODEL
+# =========================================================
 
 # Load dataset
 diabetes = pd.read_csv("diabetes.csv")
@@ -23,11 +25,11 @@ y_d = diabetes["Outcome"]
 
 # Scaling
 scaler = StandardScaler()
-X_d = scaler.fit_transform(X_d)
+X_d_scaled = scaler.fit_transform(X_d)
 
 # Train-test split
 X_train_d, X_test_d, y_train_d, y_test_d = train_test_split(
-    X_d, y_d, test_size=0.2, random_state=42
+    X_d_scaled, y_d, test_size=0.2, random_state=42
 )
 
 # XGBoost Model (Optimized)
@@ -37,54 +39,77 @@ diabetes_model = XGBClassifier(
     max_depth=4,
     subsample=0.8,
     colsample_bytree=0.8,
-    random_state=42
+    random_state=42,
+    use_label_encoder=False,
+    eval_metric='logloss'
 )
 
 # Train model
 diabetes_model.fit(X_train_d, y_train_d)
 
-# Accuracy
+# Accuracy (for debugging/logs)
 y_pred_d = diabetes_model.predict(X_test_d)
-print("XGBoost Diabetes Accuracy:", accuracy_score(y_test_d, y_pred_d))
+print("✅ XGBoost Diabetes Accuracy:", accuracy_score(y_test_d, y_pred_d))
 
-# ================== PREDICTION FUNCTION ==================
 
-def predict_diabetes(data):
-    data = scaler.transform([data])   # VERY IMPORTANT
-    return diabetes_model.predict(data)[0]
+# =========================================================
+# 🔷 HEART DISEASE MODEL
+# =========================================================
 
-# ================== HEART MODEL ==================
+# Load dataset
 heart = pd.read_csv("heart.csv")
 
+# Split features and target
 X_h = heart.drop("target", axis=1)
 y_h = heart["target"]
 
+# Train-test split
 X_train_h, X_test_h, y_train_h, y_test_h = train_test_split(
     X_h, y_h, test_size=0.2, random_state=42
 )
 
-heart_model = RandomForestClassifier()
+# Random Forest Model
+heart_model = RandomForestClassifier(random_state=42)
 heart_model.fit(X_train_h, y_train_h)
 
-# Accuracy (optional)
+# Accuracy (for debugging/logs)
 y_pred_h = heart_model.predict(X_test_h)
-print("Heart Accuracy:", accuracy_score(y_test_h, y_pred_h))
+print("✅ Heart Disease Accuracy:", accuracy_score(y_test_h, y_pred_h))
 
 
-# ================== FUNCTIONS ==================
-
-def predict_diabetes(data):
-    return diabetes_model.predict([data])[0]
-
-def predict_heart(data):
-    return heart_model.predict([data])[0]
+# =========================================================
+# 🔷 PREDICTION FUNCTIONS (CLEAN & FINAL)
+# =========================================================
 
 # -------- Diabetes Probability --------
 def predict_diabetes_proba(data):
-    data = scaler.transform([data])
-    return diabetes_model.predict_proba(data)[0][1]
+    """
+    Returns probability of diabetes (0 to 1)
+    """
+    data_scaled = scaler.transform([data])
+    return diabetes_model.predict_proba(data_scaled)[0][1]
+
+
+# -------- Diabetes Prediction --------
+def predict_diabetes(data):
+    """
+    Returns 0 (No Diabetes) or 1 (Diabetes)
+    """
+    data_scaled = scaler.transform([data])
+    return diabetes_model.predict(data_scaled)[0]
 
 
 # -------- Heart Probability --------
 def predict_heart_proba(data):
+    """
+    Returns probability of heart disease (0 to 1)
+    """
     return heart_model.predict_proba([data])[0][1]
+
+
+# -------- Heart Prediction --------
+def predict_heart(data):
+    """
+    Returns 0 (No Disease) or 1 (Disease)
+    """
+    return heart_model.predict([data])[0]
