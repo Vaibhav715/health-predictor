@@ -1,2 +1,9 @@
-# Disease-Prediction-System
-It predicts whether you have risk of having heart disease and diabetes
+# AI Health Prediction System
+
+This project predicts:
+- Diabetes risk
+- Heart disease risk
+
+Built using:
+- Streamlit
+- Machine Learning (XGBoost, Random Forest)
